@@ -1,3 +1,3 @@
-module github.com/Shiro8613-dev/ApiBase
+module github.com/ShiroNetworkSystem/ApiBase
 
 go 1.18
