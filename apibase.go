@@ -8,12 +8,11 @@ import (
 )
 
 type System struct {
-	webHost      string
-	webPort      int
-	apiKey       string
-	handler      Handler
-	errorHandler Errorhandler
-	err          chan error
+	webHost  string
+	webPort  int
+	apiKey   string
+	handlers map[string]interface{}
+	err      chan error
 }
 
 type Handler func() error
@@ -22,26 +21,27 @@ type M map[string]interface{}
 
 func NewSystem(host string, port int, key string) System {
 	return System{
-		webHost: host,
-		webPort: port,
-		apiKey:  key,
-		err:     make(chan error),
+		webHost:  host,
+		webPort:  port,
+		apiKey:   key,
+		handlers: map[string]interface{}{},
+		err:      make(chan error),
 	}
 }
 
 func (s System) SetApiHandler(h Handler) {
-	s.handler = h
+	s.handlers["handler"] = h
 }
 
 func (s System) SetErrorHandler(h Errorhandler) {
-	s.errorHandler = h
+	s.handlers["error"] = h
 }
 
 func (s System) StartServer(then func()) {
 	host := fmt.Sprintf("%s:%d", s.webHost, s.webPort)
 
-	go errorProcess(s.err, s.errorHandler)
-	go server(host, s.apiKey, s.handler, s.err)
+	go errorProcess(s.err, s.handlers["error"].(Errorhandler))
+	go server(host, s.apiKey, s.handlers["handler"].(Handler), s.err)
 	then()
 }
 
