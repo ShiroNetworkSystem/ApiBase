@@ -81,6 +81,8 @@ func server(host string, apiKey string, handler Handler, errCh chan<- error) {
 					} else {
 						res.WriteHeader(http.StatusOK)
 					}
+				} else {
+					res.WriteHeader(http.StatusUnauthorized)
 				}
 			}
 		} else {
