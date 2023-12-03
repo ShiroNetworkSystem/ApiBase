@@ -46,15 +46,17 @@ func (s System) StartServer(then func()) {
 }
 
 func errorProcess(ch chan error, errorhandler Errorhandler) {
+	e := errorhandler
 	for err := range ch {
 		if err != nil {
-			errorhandler(err)
+			e(err)
 		}
 	}
 }
 
 func server(host string, apiKey string, handler Handler, errCh chan<- error) {
 	mux := http.NewServeMux()
+	h := handler
 
 	mux.HandleFunc("/api/reload", func(res http.ResponseWriter, req *http.Request) {
 		if req.Method == "POST" {
@@ -62,7 +64,7 @@ func server(host string, apiKey string, handler Handler, errCh chan<- error) {
 			if auth != "" && strings.Contains(auth, "Bearer") {
 				key := strings.Replace(auth, "Bearer ", "", 1)
 				if key != "" && key == apiKey {
-					err := handler()
+					err := h()
 					if err != nil {
 						res.WriteHeader(http.StatusInternalServerError)
 						msg, err := createJsonMessage(M{
